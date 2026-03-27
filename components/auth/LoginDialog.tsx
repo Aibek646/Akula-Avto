@@ -23,10 +23,21 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import useLoginDialog from "@/hooks/use-login-dialog";
 import useRegisterDialog from "@/hooks/use-register.dialog";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { loginMutationFunction, registerMutationFunction } from "@/lib/fetcher";
+import { toast } from "sonner";
+import { Loader } from "lucide-react";
 
 const LoginDialog = () => {
   const { open, onClose } = useLoginDialog();
   const { onOpen } = useRegisterDialog();
+
+  const queryClient = useQueryClient();
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: loginMutationFunction,
+  });
+
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -34,8 +45,32 @@ const LoginDialog = () => {
       password: "",
     },
   });
-  const onSubmit = (values: z.infer<typeof signupSchema>) => {
-    console.log(values);
+  const onSubmit = (values: z.infer<typeof loginSchema>) => {
+    mutate(values, {
+      onSuccess: () => {
+        queryClient.refetchQueries({
+          queryKey: ["currentUser"],
+        });
+        toast("Login successfull!", {
+          description: "Today",
+          action: {
+            label: "Undo",
+            onClick: () => console.log("Undo"),
+          },
+        });
+        form.reset();
+        onClose();
+      },
+      onError: (err: any) => {
+        toast("Error occurred", {
+          description: "Login failed, please try again",
+          action: {
+            label: "Undo",
+            onClick: () => console.log("Undo"),
+          },
+        });
+      },
+    });
   };
 
   const handleRegisterOpen = () => {
@@ -91,7 +126,13 @@ const LoginDialog = () => {
                 </FormItem>
               )}
             />
-            <Button className="w-full" type="submit" size="lg">
+            <Button
+              disabled={isPending}
+              className="w-full"
+              type="submit"
+              size="lg"
+            >
+              {isPending && <Loader className="w-4 h-4 animate-spin" />}
               Login
             </Button>
           </form>

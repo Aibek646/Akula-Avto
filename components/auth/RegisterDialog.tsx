@@ -23,10 +23,20 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import useRegisterDialog from "@/hooks/use-register.dialog";
 import useLoginDialog from "@/hooks/use-login-dialog";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { registerMutationFunction } from "@/lib/fetcher";
+import { toast } from "sonner";
+import { Loader } from "lucide-react";
 
 const RegisterDialog = () => {
   const { open, onClose } = useRegisterDialog();
   const { onOpen } = useLoginDialog();
+
+  const queryClient = useQueryClient();
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: registerMutationFunction,
+  });
 
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
@@ -38,7 +48,31 @@ const RegisterDialog = () => {
     },
   });
   const onSubmit = (values: z.infer<typeof signupSchema>) => {
-    console.log(values);
+    mutate(values, {
+      onSuccess: () => {
+        queryClient.refetchQueries({
+          queryKey: ["currentUser"],
+        });
+        toast("Registration successfull!", {
+          description: "Today",
+          action: {
+            label: "Undo",
+            onClick: () => console.log("Undo"),
+          },
+        });
+        form.reset();
+        onClose();
+      },
+      onError: (err: any) => {
+        toast("Error occurred!", {
+          description: "Registration failed.Please try again",
+          action: {
+            label: "Undo",
+            onClick: () => console.log("Undo"),
+          },
+        });
+      },
+    });
   };
 
   const hangleLoginOpen = () => {
@@ -97,24 +131,7 @@ const RegisterDialog = () => {
               name="shopName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Techithemma co"
-                      className="!h-10"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="shopName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>shop name</FormLabel>
+                  <FormLabel>Shop Name</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="Techithemma co"
@@ -132,7 +149,7 @@ const RegisterDialog = () => {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>password</FormLabel>
+                  <FormLabel>Password</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="********"
@@ -145,7 +162,13 @@ const RegisterDialog = () => {
                 </FormItem>
               )}
             />
-            <Button className="w-full" type="submit" size="lg">
+            <Button
+              disabled={isPending}
+              className="w-full"
+              type="submit"
+              size="lg"
+            >
+              {isPending && <Loader className="w-4 h-4 animate-spin" />}
               Register
             </Button>
           </form>
@@ -153,8 +176,13 @@ const RegisterDialog = () => {
         <div className="mt-2 flex items-center justify-center">
           <p className="text-sm text-muted-foreground">
             Already have an account?
-            <button onClick={hangleLoginOpen} className="!text-primary">
-              Sign in
+            <button
+              disabled={isPending}
+              onClick={hangleLoginOpen}
+              className="!text-primary"
+            >
+              {isPending && <Loader className="w-4 h-4 animate-spin" />}
+              Login
             </button>
           </p>
         </div>
