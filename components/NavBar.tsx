@@ -6,14 +6,37 @@ import { Command } from "@/components/ui/command";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Loader, MessageSquare, MessageSquareText, Plus } from "lucide-react";
 import useRegisterDialog from "@/hooks/use-register.dialog";
 import useLoginDialog from "@/hooks/use-login-dialog";
+import useCurrentUser from "@/hooks/api/use-current-user";
+import { useRouter } from "next/navigation";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const NavBar = () => {
+  const router = useRouter();
   const { onOpen: onRegisterOpen } = useRegisterDialog();
   const { onOpen: onLoginOpen } = useLoginDialog();
   const [searchKeyword, setSearchKeyword] = React.useState("");
+
+  const { data: userData, isPending: isLoading } = useCurrentUser();
+  const user = userData?.user;
+
+  const handleSell = () => {
+    if (!user) {
+      onLoginOpen();
+      return;
+    }
+    router.push("/my-shop/add-listing");
+  };
+
   return (
     <header
       className="w-full px-3 md:px-0 bg-primary sticky top-0 align-top z-10 h-14"
@@ -57,23 +80,67 @@ const NavBar = () => {
           </li>
         </ul>
         <div className="ml-auto flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={onLoginOpen}
-              className="text-sm font-extralight text-white"
-            >
-              Sign in
-            </button>
-            <Separator orientation="vertical" className="h-3 text-white" />
+          {isLoading ? (
+            <Loader className="w-5 h-5 animate-spin text-white" />
+          ) : !user ? (
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={onLoginOpen}
+                className="text-sm font-extralight text-white"
+              >
+                Sign in
+              </button>
+              <Separator orientation="vertical" className="h-3 text-white" />
 
-            <button
-              onClick={onRegisterOpen}
-              className="text-sm font-extralight text-white"
-            >
-              Registration
-            </button>
-          </div>
-          <Button size="default" className="!bg-[#fea03c] !px-5 !h-10">
+              <button
+                onClick={onRegisterOpen}
+                className="text-sm font-extralight text-white"
+              >
+                Registration
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <Button
+                size="icon"
+                className="rounded-full shadow-sm !py-0 bg-white !text-black"
+              >
+                <MessageSquareText />
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Avatar role="button" className="h-9 w-9 shadow-sm">
+                    <AvatarFallback className="text-sm uppercase">
+                      {user?.name.charAt()}
+                      {user?.name.charAt(1)}
+                    </AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuItem
+                    className="!cursor-pointer"
+                    onClick={() => router.push("/my-shop")}
+                  >
+                    My Shop
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator>
+                    <DropdownMenuItem
+                      className="!cursor-pointer"
+                      onClick={() => router.push("/my-shop")}
+                    >
+                      Log out
+                    </DropdownMenuItem>
+                  </DropdownMenuSeparator>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
+
+          <Button
+            size="default"
+            className="!bg-[#fea03c] !px-5 !h-10"
+            onClick={handleSell}
+          >
             <Plus />
             Sell Car
           </Button>
