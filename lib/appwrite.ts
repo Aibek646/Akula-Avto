@@ -42,3 +42,12 @@ export async function createSessionClient() {
     },
   };
 }
+
+export async function getLoggedUser() {
+  try {
+    const { account } = await createSessionClient();
+    return await account.get();
+  } catch (error) {
+    return null;
+  }
+}

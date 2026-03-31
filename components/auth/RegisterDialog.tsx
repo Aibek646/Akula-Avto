@@ -50,7 +50,7 @@ const RegisterDialog = () => {
   const onSubmit = (values: z.infer<typeof signupSchema>) => {
     mutate(values, {
       onSuccess: () => {
-        queryClient.refetchQueries({
+        queryClient.invalidateQueries({
           queryKey: ["currentUser"],
         });
         toast("Registration successfull!", {

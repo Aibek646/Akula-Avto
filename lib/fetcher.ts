@@ -11,3 +11,5 @@ export const getCurrentUserQueryFn = async () => {
   const response = await axios.get("/api/current-user");
   return response.data;
 };
+
+export const logoutMutationFn = async () => await axios.post("/api/logout");

@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useCallback } from "react";
 import Logo from "@/components/logo";
 import { Input } from "@/components/ui/input";
 import { Command } from "@/components/ui/command";
@@ -10,7 +10,7 @@ import { Loader, MessageSquare, MessageSquareText, Plus } from "lucide-react";
 import useRegisterDialog from "@/hooks/use-register.dialog";
 import useLoginDialog from "@/hooks/use-login-dialog";
 import useCurrentUser from "@/hooks/api/use-current-user";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,15 +19,41 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { logoutMutationFn } from "@/lib/fetcher";
+import { toast } from "sonner";
 
 const NavBar = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const { onOpen: onRegisterOpen } = useRegisterDialog();
   const { onOpen: onLoginOpen } = useLoginDialog();
   const [searchKeyword, setSearchKeyword] = React.useState("");
 
   const { data: userData, isPending: isLoading } = useCurrentUser();
   const user = userData?.user;
+
+  const queryClient = useQueryClient();
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: logoutMutationFn,
+    onSuccess: () => {
+      queryClient.setQueryData(["currentUser"], null);
+      queryClient.invalidateQueries({
+        queryKey: ["currentUser"],
+      });
+      router.push("/");
+    },
+    onError: (err: any) => {
+      toast("Logout failed.", {
+        description: "please try again later",
+        action: {
+          label: "Undo",
+          onClick: () => console.log("Undo"),
+        },
+      });
+    },
+  });
 
   const handleSell = () => {
     if (!user) {
@@ -36,6 +62,13 @@ const NavBar = () => {
     }
     router.push("/my-shop/add-listing");
   };
+
+  const handleLogout = useCallback(() => {
+    mutate();
+  }, [mutate]);
+
+  const hideSearchPathname = ["/", "/my-shop/add-listing", "/profile-messages"];
+  const hideNavPath = ["/my-shop", "/my-shop/add-listing", "/profile-messages"];
 
   return (
     <header
@@ -46,41 +79,47 @@ const NavBar = () => {
         <Logo />
         <ul className="hidden lg:flex flex-1 items-center justify-center  mx-9 text-white/80 space-x-6">
           <li className="flex-[0.6] hidden md:flex">
-            <div className="w-full max-w-[320px] h-10 bg-white rounded-lg relative">
-              <form action="">
-                <div className="flex items-center justify-between">
-                  <Input
-                    type="search"
-                    name="keyword"
-                    autoComplete="off"
-                    placeholder="type your search"
-                    className="flex-1 !shadow-none h-10 text-black !ring-0 !border-0"
-                    value={searchKeyword}
-                    onChange={() => setSearchKeyword(e.target.value)}
-                  />
-                  <Command className="w-5 h-5 mr-2 text-gray-600" />
-                </div>
-              </form>
-            </div>
+            {hideSearchPathname.includes(pathname) && (
+              <div className="w-full max-w-[320px] h-10 bg-white rounded-lg relative">
+                <form action="">
+                  <div className="flex items-center justify-between">
+                    <Input
+                      type="search"
+                      name="keyword"
+                      autoComplete="off"
+                      placeholder="type your search"
+                      className="flex-1 !shadow-none h-10 text-black !ring-0 !border-0"
+                      value={searchKeyword}
+                      onChange={() => setSearchKeyword(e.target.value)}
+                    />
+                    <Command className="w-5 h-5 mr-2 text-gray-600" />
+                  </div>
+                </form>
+              </div>
+            )}
           </li>
-          <li>
-            <Link className="text-sm font-medium" href="/">
-              Home
-            </Link>
-          </li>
-          <li>
-            <Link className="text-sm font-medium" href="/">
-              Services & Repair
-            </Link>
-          </li>
-          <li>
-            <Link className="text-sm font-medium" href="/">
-              Pricing
-            </Link>
-          </li>
+          {!hideNavPath.includes(pathname) && (
+            <>
+              <li>
+                <Link className="text-sm font-medium" href="/">
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link className="text-sm font-medium" href="/">
+                  Services & Repair
+                </Link>
+              </li>
+              <li>
+                <Link className="text-sm font-medium" href="/">
+                  Pricing
+                </Link>
+              </li>
+            </>
+          )}
         </ul>
         <div className="ml-auto flex items-center space-x-4">
-          {isLoading ? (
+          {isLoading || isPending ? (
             <Loader className="w-5 h-5 animate-spin text-white" />
           ) : !user ? (
             <div className="flex items-center space-x-2">
@@ -125,8 +164,9 @@ const NavBar = () => {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator>
                     <DropdownMenuItem
+                      onClick={handleLogout}
+                      disabled={isPending}
                       className="!cursor-pointer"
-                      onClick={() => router.push("/my-shop")}
                     >
                       Log out
                     </DropdownMenuItem>
