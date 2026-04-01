@@ -3,12 +3,13 @@ import React from "react";
 import { listingSchema } from "@/validation/listing.validation";
 import { z } from "zod";
 import { isValidPhoneNumber } from "react-phone-number-input";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { addListingFields } from "@/constants/listing-fields";
 import FormGenerator from "@/components/FormGenerator";
+import { Button } from "@/components/ui/button";
 
 const AddListing = () => {
   const listingClientSchema = listingSchema.extend({
@@ -47,6 +48,11 @@ const AddListing = () => {
     },
   });
 
+  const brand = useWatch({
+    control: form.control,
+    name: "brand",
+  });
+
   function onSubmit(values: FormDataType) {
     console.log(values);
   }
@@ -74,6 +80,12 @@ const AddListing = () => {
                           control={form.control}
                           disabled={field.disabled}
                           render={({ field: formField }) => {
+                            const filteredModels =
+                              field.name === "model" && brand
+                                ? field?.options?.filter(
+                                    (model) => model.key === brand,
+                                  )
+                                : [];
                             const valueMultiSelect =
                               field.fieldType === "multiselect"
                                 ? Array.isArray(formField.value)
@@ -86,7 +98,13 @@ const AddListing = () => {
                               >
                                 <FormControl>
                                   <FormGenerator
-                                    field={field}
+                                    field={{
+                                      ...field,
+                                      options:
+                                        field.name === "model"
+                                          ? filteredModels
+                                          : field.options,
+                                    }}
                                     register={form.register}
                                     errors={form.formState.errors}
                                     formValue={formField.value}
@@ -100,6 +118,14 @@ const AddListing = () => {
                         />
                       ))}
                     </div>
+                    <Button
+                      className="mt-6 cursor-pointer py-6 mb-4 w-full max-w-xs flex place-items-center justify-self-center"
+                      disabled={false}
+                      type="submit"
+                      size="lg"
+                    >
+                      Post Listing
+                    </Button>
                   </form>
                 </Form>
               </div>

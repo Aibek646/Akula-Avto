@@ -52,6 +52,7 @@ const NavBar = () => {
           onClick: () => console.log("Undo"),
         },
       });
+      return;
     },
   });
 

@@ -46,34 +46,40 @@ const FormGenerator: React.FC<FormGeneratorProps> = ({
 
   return (
     <div className="grid gap-2">
-      {label && <Label htmlFor={name}>{label}</Label>}
+      {!label && <Label htmlFor={name}>{label}</Label>}
       {fieldType === "text" && (
         <Input
           id={name}
           type="text"
-          className="!h-12 shadow-none"
-          disabled={disabled}
-          placeholder={placeholder}
-          defaultValue={defaultValue}
-          {...register(name)}
-        />
-      )}
-      {fieldType === "number" && (
-        <Input
-          id={name}
-          type="number"
-          className="!h-12 shadow-none placeholder:!text-muted-foreground"
+          className="!h-12 shadow-none text-sm"
           disabled={disabled}
           placeholder={placeholder || label}
           defaultValue={defaultValue}
-          {...register(name)}
+          {...register(name, {
+            onChange: (e) => {
+              const rawValue = e.target.value
+                ? e.target.value.replace(/\D/g, "")
+                : "";
+              const formattedValue = rawValue
+                ? new Intl.NumberFormat().format(Number(rawValue))
+                : "";
+              e.target.value = formattedValue;
+            },
+            setValueAs: (value) => {
+              if (typeof value === "string" || typeof value === "number") {
+                const cleanedValue = String(value).replace(/\D/g, "");
+                return cleanedValue ? Number(cleanedValue) : null;
+              }
+              return null;
+            },
+          })}
         />
       )}
       {fieldType === "number" && (
         <Input
           id={name}
           type="number"
-          className="!h-12 shadow-none placeholder:!text-muted-foreground"
+          className="!h-12 text-sm shadow-none placeholder:!text-muted-foreground"
           disabled={disabled}
           placeholder={placeholder || label}
           defaultValue={defaultValue}
@@ -90,24 +96,6 @@ const FormGenerator: React.FC<FormGeneratorProps> = ({
             disabled={disabled}
             placeholder={placeholder || label}
             defaultValue={defaultValue}
-            {...register(name, {
-              onChange: (e) => {
-                const rawValue = e.target.value
-                  ? e.target.value.replace(/\D/g, "")
-                  : "";
-                const formattedValue = rawValue
-                  ? new Intl.NumberFormat().format(Number(rawValue))
-                  : "";
-                e.target.value = formattedValue;
-              },
-              setValueAs: (value) => {
-                if (typeof value === "string" || typeof value === "number") {
-                  const cleanedValue = String(value).replace(/\D/g, "");
-                  return cleanedValue ? Number(cleanedValue) : null;
-                }
-                return null;
-              },
-            })}
           />
         </div>
       )}
@@ -115,8 +103,7 @@ const FormGenerator: React.FC<FormGeneratorProps> = ({
       {fieldType === "phone" && (
         <PhoneInput
           id={name}
-          type="number"
-          className="phone--input !h-12"
+          className="phone--input !h-12 text-sm"
           autoComplete="off"
           disabled={disabled}
           placeholder={placeholder || label}
@@ -130,7 +117,7 @@ const FormGenerator: React.FC<FormGeneratorProps> = ({
       {fieldType === "textarea" && (
         <Textarea
           id={name}
-          className=""
+          className="text-sm"
           disabled={disabled}
           placeholder={placeholder || label}
           defaultValue={defaultValue}
@@ -145,7 +132,7 @@ const FormGenerator: React.FC<FormGeneratorProps> = ({
           onValueChange={(value) => onChange?.(value)}
           disabled={disabled || options?.length === 0}
         >
-          <SelectTrigger className="w-full !h-12 shadow-none data-[placeholder]:text-muted-foreground">
+          <SelectTrigger className="w-full text-sm !h-12 shadow-none data-[placeholder]:text-muted-foreground">
             <SelectValue placeholder={placeholder || `Select ${label}`} />
           </SelectTrigger>
           <SelectContent>
