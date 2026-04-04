@@ -5,7 +5,6 @@ import {
   FieldValues,
   UseFormRegister,
 } from "react-hook-form";
-import { Label } from "@radix-ui/react-menu";
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,13 +16,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import MultipleSelector from "@/components/ui/multi-select";
+import { Label } from "@/components/ui/label";
 
 type FormGeneratorProps = {
   field: FieldType;
   register: UseFormRegister<any>;
   errors: FieldErrors<FieldValues>;
   formValue?: any;
-  onChange: (values: any) => void;
+  onChange?: (value: any) => void;
   defaultValue?: any;
   valueMultiSelect?: string[];
 };
@@ -38,7 +38,7 @@ const FormGenerator: React.FC<FormGeneratorProps> = ({
 }) => {
   const { name, fieldType, label, disabled, placeholder, options } = field;
   const getSelectedItems = (
-    options: { label: string; value: string }[],
+    options: { key?: string; label: string; value: string }[],
     valueMultiSelect: string[] = [],
   ) => {
     return options.filter((option) => valueMultiSelect.includes(option.value));
@@ -51,28 +51,11 @@ const FormGenerator: React.FC<FormGeneratorProps> = ({
         <Input
           id={name}
           type="text"
-          className="!h-12 shadow-none text-sm"
+          className="!h-12 shadow-none text-sm  placeholder:!text-muted-foreground"
           disabled={disabled}
           placeholder={placeholder || label}
           defaultValue={defaultValue}
-          {...register(name, {
-            onChange: (e) => {
-              const rawValue = e.target.value
-                ? e.target.value.replace(/\D/g, "")
-                : "";
-              const formattedValue = rawValue
-                ? new Intl.NumberFormat().format(Number(rawValue))
-                : "";
-              e.target.value = formattedValue;
-            },
-            setValueAs: (value) => {
-              if (typeof value === "string" || typeof value === "number") {
-                const cleanedValue = String(value).replace(/\D/g, "");
-                return cleanedValue ? Number(cleanedValue) : null;
-              }
-              return null;
-            },
-          })}
+          {...register(name)}
         />
       )}
       {fieldType === "number" && (
@@ -88,7 +71,9 @@ const FormGenerator: React.FC<FormGeneratorProps> = ({
       )}
       {fieldType === "currency" && (
         <div className="relative">
-          <span className="absolute inset-y-0 left-0 items-center pl-3 text-sm text-gray-500 dark:grat-400"></span>
+          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-sm text-gray-500 dark:gray-400">
+            $
+          </span>
           <Input
             id={name}
             type="text"
@@ -96,6 +81,24 @@ const FormGenerator: React.FC<FormGeneratorProps> = ({
             disabled={disabled}
             placeholder={placeholder || label}
             defaultValue={defaultValue}
+            {...register(name, {
+              onChange: (e) => {
+                const rawValue = e.target.value
+                  ? e.target.value.replace(/\D/g, "")
+                  : "";
+                const formattedValue = rawValue
+                  ? new Intl.NumberFormat().format(Number(rawValue))
+                  : "";
+                e.target.value = formattedValue;
+              },
+              setValueAs: (value) => {
+                if (typeof value === "string" || typeof value === "number") {
+                  const cleanedValue = String(value).replace(/\D/g, "");
+                  return cleanedValue ? Number(cleanedValue) : null;
+                }
+                return null;
+              },
+            })}
           />
         </div>
       )}
