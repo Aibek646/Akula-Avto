@@ -1,14 +1,10 @@
-import React from "react";
 import { ListingType } from "@/@types/api.type";
-import { Card, CardContent } from "@/components/ui/card";
+import React from "react";
+import { Card, CardContent } from "../ui/card";
 import { CarFrontIcon, Grid3x3, List } from "lucide-react";
-import CarlistingSkeleton from "@/components/skeleton-loader/carlisting-skeleton";
-import EmptyState from "@/components/EmptyState";
-import CarCard from "@/components/CarCard";
-
-function CardListingSkeleton() {
-  return null;
-}
+import CarListingSkeleton from "../skeleton-loader/carlisting-skeleton";
+import EmptyState from "../EmptyState";
+import CarCard from "../CarCard";
 
 const AllListing = ({
   listings,
@@ -17,40 +13,48 @@ const AllListing = ({
   listings: ListingType[];
   isPending: boolean;
 }) => {
-  const [layout, setlayout] = React.useState<"list" | "grid">("grid");
+  const [layout, setLayout] = React.useState<"list" | "grid">("grid");
   return (
-    <Card className="shadow-none !bg-transparent rounded=[8px] border-none min-h-56">
+    <Card
+      className="shadow-none !bg-transparent rounded-[8px]
+       border-none min-h-56    "
+    >
       <CardContent className="p-3">
-        <div className="w-full flex items-center justify-between">
+        <div className="w-full flex items-center justify-between mb-3">
           <h2 className="text-xl font-bold">
-            All listings ({listings.length || 0})
+            All Listing ({listings.length || 0})
           </h2>
+
           <div className="flex items-center justify-center">
             <Grid3x3
               role="button"
-              className={`${layout === "grid" ? "text-primary" : ""}`}
               onClick={() => {
-                setlayout("grid");
+                setLayout("grid");
               }}
+              className={`${layout === "grid" ? "text-primary" : ""}`}
             />
             <List
               role="button"
-              className={`${layout === "grid" ? "text-primary" : ""}`}
               onClick={() => {
-                setlayout("grid");
+                setLayout("list");
               }}
+              className={`ml-2 ${layout === "list" ? "text-primary" : ""}`}
             />
           </div>
         </div>
         {isPending ? (
-          <CarlistingSkeleton layout={layout} />
+          <CarListingSkeleton layout={layout} />
         ) : listings.length === 0 ? (
           <EmptyState message="No Car found" icon={CarFrontIcon} />
         ) : (
           <div
-            className={`w-full grid ${layout === "list" ? "grid-cols-1 gap-4" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6`}"}`}
+            className={`w-full grid ${
+              layout === "list"
+                ? "grid-cols-1 gap-4"
+                : "grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            }`}
           >
-            {listings.map((listing) => (
+            {listings?.map((listing) => (
               <CarCard key={listing.$id} listing={listing} layout={layout} />
             ))}
           </div>
@@ -59,4 +63,5 @@ const AllListing = ({
     </Card>
   );
 };
+
 export default AllListing;

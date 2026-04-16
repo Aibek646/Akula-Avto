@@ -7,11 +7,12 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Scrollbar } from "@radix-ui/react-scroll-area";
+
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Button } from "@/components/ui/button";
 interface PropsType {
   title: string;
   value: string;
@@ -28,7 +29,7 @@ interface PropsType {
   onClear?: () => void;
 }
 
-const FilterAccordionItem = ({
+const FilterAccordionItemComponent = ({
   title,
   value,
   filterType,
@@ -57,7 +58,14 @@ const FilterAccordionItem = ({
     }
   }, [searchItem, hasSearch]);
 
-  const handleRadionChange = () => {};
+  const handleRadioChange = (value: string) => {
+    if (value === "custom") {
+      setIsCustomSelected(true);
+    } else {
+      setIsCustomSelected(false);
+      onValuesChange?.(value);
+    }
+  };
 
   const handleClear = () => {
     onClear?.();
@@ -119,12 +127,12 @@ const FilterAccordionItem = ({
                 </label>
               ))}
             </div>
-            <Scrollbar orientation="vertical" />
+            <ScrollBar orientation="vertical" />
           </ScrollArea>
         )}
         {filterType === "radio" && (
           <RadioGroup
-            onChange={handleRadionChange}
+            onValueChange={handleRadioChange}
             value={selectedValues as string}
             disabled={disabled}
             className={cn(
@@ -145,20 +153,35 @@ const FilterAccordionItem = ({
                       value={option.value}
                       id={`radio-item-${option.value}`}
                       checked={
-                        option.value === isCustomSelected
-                          ? "custom"
-                          : selectedValues
+                        option.value ===
+                        (isCustomSelected ? "custom" : selectedValues)
                       }
                       className="text-primary"
                     />
+                    <span className="flex-1 text-sm">{option.label}</span>
                   </label>
                 );
               })}
+              {isCustomSelected && renderCustom}
             </div>
           </RadioGroup>
+        )}
+
+        {hasClearButton && (
+          <div className="mt-2">
+            <Button
+              variant="ghost"
+              onClick={handleClear}
+              className="!text-muted-foreground !bg-transparent !font-medium !text-[13px] uppercase !p-0 !w-auto !h-auto"
+            >
+              Clear
+            </Button>
+          </div>
         )}
       </AccordionContent>
     </AccordionItem>
   );
 };
+
+const FilterAccordionItem = React.memo(FilterAccordionItemComponent);
 export default FilterAccordionItem;
