@@ -26,7 +26,7 @@ export type ListingType = {
   interiorColor?: string;
   condition: string;
   secondCondition?: string[];
-  mileage?: string;
+  mileage?: string | number;
   transmission: string;
   fuelType: string;
   keyFeatures?: string[];

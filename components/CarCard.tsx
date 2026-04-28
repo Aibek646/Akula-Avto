@@ -27,9 +27,11 @@ const CarCard: React.FC<CardCardProps> = ({ listing, layout = "grid" }) => {
     description,
   } = listing;
   const slug = createSlug(displayTitle);
+
   const conditionLabel = CAR_CONDITION_OPTIONS.find(
     (opt) => opt.value === condition,
   )?.label;
+
   return (
     <div>
       <Link href={`/detail/${slug}/${$id}`}>

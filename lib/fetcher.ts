@@ -60,3 +60,8 @@ export const getMyShopQueryFn = async () => {
   const response = await axios.get("/api/shop/my-shop");
   return response.data;
 };
+
+export const getSingleListingQueryFn = async (listingId: string) => {
+  const response = await axios.get(`/api/listing/${listingId}`);
+  return response.data;
+};
