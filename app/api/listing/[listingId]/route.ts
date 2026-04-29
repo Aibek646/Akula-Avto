@@ -4,10 +4,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (
   req: NextRequest,
-  { params }: { params: { listingId: string } },
+  { params }: { params: Promise<{ listingId: string }> },
 ) => {
   try {
-    const { listingId } = params;
+    const { listingId } = await params;
     const { databases } = await createAnonymousClient();
 
     const listing = await databases.getDocument(
