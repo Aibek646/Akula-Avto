@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/carousel";
 import Image from "next/image";
 import { CameraIcon } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const CarCarousel = ({
   imageUrls = [],
@@ -35,7 +36,7 @@ const CarCarousel = ({
           : visibleThumbnails.length - 1;
       });
     });
-  }, []);
+  }, [api]);
 
   const visibleThumbnails = imageUrls?.slice(0, 5);
   const remainingThumbnailCount = Math.max(0, imageUrls?.length - 5);
@@ -73,7 +74,7 @@ const CarCarousel = ({
               ))}
             </CarouselContent>
             <div
-              className="b-carousel absolute bottom-[20px] left-[30px] flex
+              className="b-carousel-counter absolute bottom-[20px] left-[30px] flex
             justify-center items-center bg-[#0006] rounded-[4px]
             text-[#f2f2f2] text-[14px] p-[4px_11px] gap-1"
             >
@@ -82,12 +83,79 @@ const CarCarousel = ({
                 {current}/{count}
               </div>
             </div>
+            <CarouselPrevious
+              className="carousel--navigation left-2 md:left-8
+           !bg-transparent !border-0 text-white !p-0"
+            />
             <CarouselNext
               className="carousel--navigation right-2 md:right-8
            !bg-transparent !border-0 text-white !p-0"
             />
           </Carousel>
         )}
+        <div className="relative w-full flex overflow-hidden">
+          {isPending ? (
+            <div
+              className="w-full flex gap-2
+            items-center justify-between
+            md:justify-start"
+            >
+              {Array.from({ length: 5 }).map((_, index) => (
+                <Skeleton
+                  key={index}
+                  className="w-[calc(50%-4px)]
+                  sm:w-[calc(33%-4px] md:w-[35% h-auto m-1 mx-0]"
+                />
+              ))}
+            </div>
+          ) : (
+            <div
+              className="-ml-1 md:-ml-5 -mr-1 md:mr-5
+             flex items-center justify-between md:justify-start"
+            >
+              {visibleThumbnails?.map((imageUrl, index) => (
+                <button
+                  key={index}
+                  className={`relative w-[calc(50%-4px)] sm:w-[calc(33%-4px] md:w-[25%]
+                   h-auto m-1 md:m-2 mx-1 overflow-hidden bg-[#f6f6f6]
+                   ${
+                     activeThumbnailIndex === index
+                       ? "ring-2 ring-primary"
+                       : "hover:opacity-80 transition-opacity"
+                   }`}
+                  onClick={() => {
+                    api?.scrollTo(index);
+                    setActiveThumbnailIndex(index);
+                  }}
+                >
+                  <Image
+                    src={imageUrl}
+                    className="!w-full !h-full object-cover"
+                    alt=""
+                    width={185}
+                    height={185}
+                    priority
+                  />
+                  {index === 4 && remainingThumbnailCount > 0 && (
+                    <div
+                      className="absolute inset-0 bg-black/50
+                     rounded-lg flex flex-col justify-center items-center
+                      text-white text-sm font-medium leading-[2px]"
+                    >
+                      <p>
+                        +{""}
+                        <span className="!text-4xl">
+                          {remainingThumbnailCount}
+                        </span>
+                      </p>
+                      <p>images</p>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

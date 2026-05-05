@@ -8,6 +8,7 @@ import { getSingleListingQueryFn } from "@/lib/fetcher";
 import { ListingType } from "@/@types/api.type";
 import CarHeader from "@/app/(web)/detail/_components/car-header";
 import CarCarousel from "@/app/(web)/detail/_components/car-carousel";
+import CarDetails from "@/app/(web)/detail/_components/car-details";
 
 const CarDetail = ({
   params,
@@ -51,6 +52,7 @@ const CarDetail = ({
                 imageUrls={listings?.imageUrls}
                 isPending={isPending}
               />
+              <CarDetails listing={listings} isPending={isPending} />
             </div>
             <div></div>
           </div>
