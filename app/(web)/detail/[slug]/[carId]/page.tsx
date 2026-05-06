@@ -9,7 +9,7 @@ import { ListingType } from "@/@types/api.type";
 import CarHeader from "@/app/(web)/detail/_components/car-header";
 import CarCarousel from "@/app/(web)/detail/_components/car-carousel";
 import CarDetails from "@/app/(web)/detail/_components/car-details";
-
+import ShopInfo from "@/app/(web)/detail/_components/shop-info";
 const CarDetail = ({
   params,
 }: {
@@ -54,7 +54,15 @@ const CarDetail = ({
               />
               <CarDetails listing={listings} isPending={isPending} />
             </div>
-            <div></div>
+            <div>
+              <ShopInfo
+                price={listings?.price}
+                shopId={listings?.shopId}
+                shopName={listings?.shop?.shopName || ""}
+                shopOwnerUserId={listings?.shop?.userId || ""}
+                isPending={isPending || isError}
+              />
+            </div>
           </div>
         </div>
       </div>
